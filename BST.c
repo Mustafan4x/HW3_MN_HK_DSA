@@ -1,5 +1,6 @@
 /*
  * CSE 3318 - Homework 3
+ *
  * Name: Mustafa Nazeer
  * UTA ID: 1002332338
  * 
@@ -93,7 +94,7 @@ int binarySearch(int arr[], int size, int target){
     int start = 0;
     int end = size - 1;
 
-    while(end <= start){
+    while(start <= end){
         int middle = start + (end - start) / 2;
 
         if(arr[middle] == target)
@@ -126,8 +127,13 @@ Node* BST_Search(Node* root, int target){
 
 Node* BST_Insert_Recursive(Node* root, int new_key){
 
-    if(root == NULL)
-        return malloc(sizeof(Node));
+    if(root == NULL){
+        Node* newNode = malloc(sizeof(Node));
+        newNode->key = new_key;
+        newNode->left = NULL;
+        newNode->right = NULL;
+        return newNode;
+    }
 
     if(new_key < root->key)
         root->left = BST_Insert_Recursive(root->left, new_key);
@@ -140,6 +146,9 @@ Node* BST_Insert_Recursive(Node* root, int new_key){
 Node* BST_Insert_Iterative(Node* root, int new_key){
 
     Node* newNode = malloc(sizeof(Node));
+    newNode->key = new_key;
+    newNode->left = NULL;
+    newNode->right = NULL;
 
     if(root == NULL)
         return newNode;
@@ -177,6 +186,8 @@ void freeTree(Node* root){
 
     free(root);
 }
+
+void printSummary(double[], double[], double[], double[], double[], double[], double[], double[]);
 
 int main() {
 
@@ -254,7 +265,7 @@ int main() {
 
 
 
-        printf("Time to sort array of size %d: %f seconds\n", sizes[i], time_taken);
+        printf("Time to sort array of size %d: %f micro-seconds\n", sizes[i], time_taken * 1000000);
 
         filePtr = fopen(sfilenames[i], "w");
 
@@ -320,16 +331,23 @@ int main() {
         // 1. Random BST (Insert keys in the exact order they appear in the file)
         Node* randomBST = NULL;
 
+        start_time = clock();
         for(int j = 0; j < sizes[i]; ++j){
-            BST_Insert_Iterative(randomBST, arrays[i][j]);
+            randomBST = BST_Insert_Iterative(randomBST, arrays[i][j]);
         }
+        end_time = clock();
+
+        printf("Random BST Creation Time: %f micro-seconds.\n", ((double)(end_time - start_time) / CLOCKS_PER_SEC) * 1000000);
 
         // 2. Sorted BST (Insert keys from the sorted array)
         Node* sortedBST = NULL;
-
+        start_time = clock();
         for(int j = 0; j < sizes[i]; ++j){
-            BST_Insert_Iterative(sortedBST, s_arrays[i][j]);
+            sortedBST = BST_Insert_Iterative(sortedBST, arrays[i][j]);
         }
+        end_time = clock();
+        printf("Sorted BST Creation Time: %f micro-seconds.\n\n", ((double)(end_time - start_time) / CLOCKS_PER_SEC) * 1000000);
+
 
         double randomBST_SearchTimes[totalRandomElements];
         double sortedBST_SearchTime[totalRandomElements];
@@ -363,7 +381,7 @@ int main() {
         for(int j = 0; j < totalRandomElements; ++j){
 
             start_time = clock();
-            BST_Insert_Iterative(randomBST, newRandomElements[j]);
+            randomBST = BST_Insert_Iterative(randomBST, newRandomElements[j]);
             end_time = clock();
 
             randomBST_InsertTimes_Iterative[j] = ((double)(end_time - start_time)) / CLOCKS_PER_SEC;
@@ -378,7 +396,7 @@ int main() {
 
 
             start_time = clock();
-            BST_Insert_Iterative(sortedBST, newRandomElements[j]);
+            sortedBST = BST_Insert_Iterative(sortedBST, newRandomElements[j]);
             end_time = clock();
 
             sortedBST_InsertTimes_Iterative[j] = ((double)(end_time - start_time)) / CLOCKS_PER_SEC;
@@ -393,8 +411,75 @@ int main() {
         // Cleanup memory for this iteration
         freeTree(randomBST);
         freeTree(sortedBST);
-        printf("\n");
+
+        printSummary(linearSearchTimes, binarySearchTimes, 
+                    randomBST_SearchTimes, randomBST_InsertTimes_Iterative, randomBST_InsertTimes_Recursive,
+                    sortedBST_SearchTime, sortedBST_InsertTimes_Iterative, sortedBST_InsertTimes_Recursive);
+
     }
 
     return 0;
+}
+
+void printSummary(double aLSTimes[], double aBSTime[], double aRandomBSTS[], double aRandomIterative[], double aRandomRecursive[],
+                                                 double aSortedBSTS[], double aSortedIterative[], double aSortedRecursive[]){
+
+    int totalRandomElements = 10;
+
+    double averageLinearSearchTime = 0.0;
+    for(int i = 0; i < totalRandomElements; ++i)
+        averageLinearSearchTime += aLSTimes[i];
+    averageLinearSearchTime /= totalRandomElements;
+
+    
+    double averageBinarySearchTime = 0.0;
+    for(int i = 0; i < totalRandomElements; ++i)
+        averageBinarySearchTime += aBSTime[i];
+    averageBinarySearchTime /= totalRandomElements;
+
+    double averageRandomBSTSearch = 0.0;
+    for(int i = 0; i < totalRandomElements; ++i)
+        averageRandomBSTSearch += aRandomBSTS[i];
+    averageRandomBSTSearch /= totalRandomElements;
+    
+    double averageRandomBSTInsertion_Iterative = 0.0;
+    for(int i = 0; i < totalRandomElements; ++i)
+        averageRandomBSTInsertion_Iterative += aRandomIterative[i];
+    averageRandomBSTInsertion_Iterative /= totalRandomElements;
+
+    double averageRandomBSTInsertion_Recursive = 0.0;
+    for(int i = 0; i < totalRandomElements; ++i)
+        averageRandomBSTInsertion_Recursive += aRandomRecursive[i];
+    averageRandomBSTInsertion_Recursive /= totalRandomElements;
+
+
+
+    double averageSortedBSTSearch = 0.0;
+    for(int i = 0; i < totalRandomElements; ++i)
+        averageSortedBSTSearch += aSortedBSTS[i];
+    averageSortedBSTSearch /= totalRandomElements;
+
+    double averageSortedBSTInsertion_Iterative = 0.0;
+    for(int i = 0; i < totalRandomElements; ++i)
+        averageSortedBSTInsertion_Iterative += aSortedIterative[i];
+    averageSortedBSTInsertion_Iterative /= totalRandomElements;
+
+    double averageSortedBSTInsertion_Recursive = 0.0;
+    for(int i = 0; i < totalRandomElements; ++i)
+        averageSortedBSTInsertion_Recursive += aSortedRecursive[i];
+    averageSortedBSTInsertion_Recursive /= totalRandomElements;
+
+
+    printf("Linear Search Time: %f micro-seconds.\n", averageLinearSearchTime * 1000000);
+    printf("Binary Search Time: %f micro-seconds.\n\n", averageBinarySearchTime * 1000000);
+
+    printf("RANDOM:\n");
+    printf("BST Search: %f micro-seconds.\n", averageRandomBSTSearch * 1000000);
+    printf("BST Iterative Insertion: %f micro-seconds.\n", averageRandomBSTInsertion_Iterative * 1000000);
+    printf("BST Resursive Insertion: %f micro-seconds.\n\n", averageRandomBSTInsertion_Recursive * 1000000);
+
+    printf("SORTED:\n");
+    printf("BST Search: %f micro-seconds.\n", averageSortedBSTSearch * 1000000);
+    printf("BST Iterative Insertion: %f micro-seconds.\n", averageSortedBSTInsertion_Iterative * 1000000);
+    printf("BST Resursive Insertion: %f micro-seconds.\n\n", averageSortedBSTInsertion_Recursive * 1000000);
 }
