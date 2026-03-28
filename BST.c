@@ -42,12 +42,14 @@ typedef struct Node {
     struct Node* right;
 } Node;
 
-
-
 void swap(int* a, int* b){
     int temp = *a;
     *a = *b;
     *b = temp;
+}
+
+int getRandomIndex(int arrSize){
+    return rand() % arrSize;
 }
 
 int partition(int A[], int p, int r){
@@ -75,9 +77,7 @@ void quickSort(int A[], int p, int r){
     }
 }
 
-int getRandomIndex(int arrSize){
-    return rand() % arrSize;
-}
+
 
 int linearSearch(int arr[], int size, int target){
 
@@ -107,6 +107,8 @@ int binarySearch(int arr[], int size, int target){
     // Target not found
     return -1;
 }
+
+
 
 Node* BST_Search(Node* root, int target){
 
@@ -187,6 +189,9 @@ void freeTree(Node* root){
     free(root);
 }
 
+
+
+// Forwardly declared function to print average times of all experiments
 void printSummary(double[], double[], double[], double[], double[], double[], double[], double[]);
 
 int main() {
@@ -242,6 +247,7 @@ int main() {
         }
         fclose(filePtr);
 
+        // Filling arrays with unsorted data
         filePtr = fopen(filenames[i], "r");
 
         if(filePtr == NULL){
@@ -290,6 +296,7 @@ int main() {
 
         FILE* filePtr;
 
+        // Writing to new arrays, this time with sorted data
         filePtr = fopen(sfilenames[i], "r");
 
         if(filePtr == NULL){
@@ -305,12 +312,16 @@ int main() {
         }
         fclose(filePtr);
 
+
+        // Generating random elements to search for
         for(int j = 0; j < totalRandomElements; ++j)
             randomElements[j] = getRandomIndex(sizes[i]);
 
+        // Arrays to hold times of searches
         double linearSearchTimes[totalRandomElements];
         double binarySearchTimes[totalRandomElements];
 
+        // Time both searches, then write down in an array
         for(int j = 0; j < totalRandomElements; ++j){
 
             start_time = clock();
@@ -349,9 +360,12 @@ int main() {
         printf("Sorted BST Creation Time: %f micro-seconds.\n\n", ((double)(end_time - start_time) / CLOCKS_PER_SEC) * 1000000);
 
 
+        // Arrays to BST search times
         double randomBST_SearchTimes[totalRandomElements];
         double sortedBST_SearchTime[totalRandomElements];
 
+        // Time both BST searches, one for random, another for sorted, then write down
+        // in an array
         for(int j = 0; j < totalRandomElements; ++j){
 
             start_time = clock();
@@ -367,19 +381,23 @@ int main() {
             sortedBST_SearchTime[j] = ((double)(end_time - start_time)) / CLOCKS_PER_SEC;
         }
 
+        // Generate a new set of random elements for insertion
         int newRandomElements[totalRandomElements];
 
         for(int j = 0; j < totalRandomElements; ++j)
             newRandomElements[j] = getRandomIndex(sizes[i]);
 
+        // Four new arrays for insertion (2 for each, iterative and recursive) times
         double randomBST_InsertTimes_Iterative[totalRandomElements];
         double randomBST_InsertTimes_Recursive[totalRandomElements];
 
         double sortedBST_InsertTimes_Iterative[totalRandomElements];
         double sortedBST_InsertTimes_Recursive[totalRandomElements];
 
+        // Time insertion times, then write down in an array
         for(int j = 0; j < totalRandomElements; ++j){
 
+            // Random BST
             start_time = clock();
             randomBST = BST_Insert_Iterative(randomBST, newRandomElements[j]);
             end_time = clock();
@@ -393,8 +411,7 @@ int main() {
             randomBST_InsertTimes_Recursive[j] = ((double)(end_time - start_time)) / CLOCKS_PER_SEC;
 
 
-
-
+            // Sorted BST
             start_time = clock();
             sortedBST = BST_Insert_Iterative(sortedBST, newRandomElements[j]);
             end_time = clock();
@@ -412,6 +429,7 @@ int main() {
         freeTree(randomBST);
         freeTree(sortedBST);
 
+        // Write out all averages
         printSummary(linearSearchTimes, binarySearchTimes, 
                     randomBST_SearchTimes, randomBST_InsertTimes_Iterative, randomBST_InsertTimes_Recursive,
                     sortedBST_SearchTime, sortedBST_InsertTimes_Iterative, sortedBST_InsertTimes_Recursive);
@@ -421,6 +439,7 @@ int main() {
     return 0;
 }
 
+// Find the average times of each set of experiments, then print for inspection
 void printSummary(double aLSTimes[], double aBSTime[], double aRandomBSTS[], double aRandomIterative[], double aRandomRecursive[],
                                                  double aSortedBSTS[], double aSortedIterative[], double aSortedRecursive[]){
 
