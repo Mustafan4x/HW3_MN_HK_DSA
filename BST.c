@@ -2,6 +2,9 @@
  * CSE 3318 - Homework 3
  * Name: Mustafa Nazeer
  * UTA ID: 1002332338
+ * 
+ * Name: Hassan Asif Khan
+ * UTA ID: 1002217908
 */
 
 
@@ -17,8 +20,12 @@
 * 
 *
 * Name:         Mustafa Nazeer
-* Date:         2-24-2026
+* Date:         3-28-2026
 * E-Signature:  Mustafa Nazeer
+*
+* Name:         Hassan Asif Khan
+* Date:         3-28-2026
+* E-Signature:  Hassan Asif Khan
 *
 */
 
@@ -34,44 +41,7 @@ typedef struct Node {
     struct Node* right;
 } Node;
 
-// Function creates a file, based off of the passed in size, then populates that file
-// with a random number in the range [0, 20,000], with 1 number per line in the file
-void populateArray(int arrSize){
 
-    FILE *filePtr;
-    char* name;
-
-    
-    if(arrSize == 30)
-        name = "nodes30.txt";
-
-    else if(arrSize == 1000)
-        name = "nodes1000.txt";
-    
-    else if(arrSize == 6000)
-        name = "nodes6000.txt";
-
-    else if(arrSize == 10000)
-        name = "nodes10000.txt";
-    else{
-        printf("Invalid array size, must be 30, 1000, 6000, or 10000.\n");
-        return;
-    }
-
-    filePtr = fopen(name, "w");
-
-    if(filePtr == NULL){
-        printf("Error opening file.\n");
-        return;
-    }
-
-    // Populate Array, go to 20,001 to have a range of [0, 20,000]
-    for(int i = 0; i < arrSize; ++i){
-        fprintf(filePtr, "%d\n", rand() % 20001);
-    }
-
-    fclose(filePtr);
-}
 
 void swap(int* a, int* b){
     int temp = *a;
@@ -104,105 +74,8 @@ void quickSort(int A[], int p, int r){
     }
 }
 
-// Fills in arrays with data from a passed in filename
-void fillArrays(char* name, int size, int arr[]){
-
-    FILE* filePtr = fopen(name, "r");
-
-    if(filePtr == NULL){
-        printf("Error opening file.\n");
-        return;
-    }
-
-    for(int i = 0; i < size; ++i){
-        if(fscanf(filePtr, "%d", &arr[i]) != 1){
-            printf("Error reading data at index %d.\n", i);
-            break;
-        }
-    }
-
-    fclose(filePtr);
-}
-
-// Resets array states, so that they're in random order before every sorting test
-void setArrayState(int arr30[], int arr1000[], int arr6000[], int arr10000[]){
-
-    // Seed RNG
-    srand(time(NULL));
-
-    populateArray(30);
-    populateArray(1000);
-    populateArray(6000);
-    populateArray(10000);
-
-    fillArrays("nodes30.txt", 30, arr30);
-    fillArrays("nodes1000.txt", 1000, arr1000);
-    fillArrays("nodes6000.txt", 6000, arr6000);
-    fillArrays("nodes10000.txt", 10000, arr10000);
-}
-
-// Function creates a file, based off of the passed in size, then populates that file
-// with the sorted version of the randomized file
-void populateArray_Sorted(int arr[], int arrSize){
-
-    FILE *filePtr;
-    char* name;
-
-    
-    if(arrSize == 30)
-        name = "snodes30.txt";
-
-    else if(arrSize == 1000)
-        name = "snodes1000.txt";
-    
-    else if(arrSize == 6000)
-        name = "snodes6000.txt";
-
-    else if(arrSize == 10000)
-        name = "snodes10000.txt";
-    else{
-        printf("Invalid array size, must be 30, 1000, 6000, or 10000.\n");
-        return;
-    }
-
-    filePtr = fopen(name, "w");
-
-    if(filePtr == NULL){
-        printf("Error opening file.\n");
-        return;
-    }
-
-    // Populate array with sorted data
-    for(int i = 0; i < arrSize; ++i){
-        fprintf(filePtr, "%d\n", arr[i]);
-    }
-
-    fclose(filePtr);
-}
-
-double getTimeToSortArray(int arr[], int size){
-
-    clock_t start = clock();
-    quickSort(arr, 0, size - 1);
-    clock_t end = clock();
-
-    // Write to File before returning
-    populateArray_Sorted(arr, size);
-
-    return (double)(end - start) / CLOCKS_PER_SEC;
-}
-
 int getRandomIndex(int arrSize){
     return rand() % arrSize;
-}
-
-double getTimeToSearchArray(void (*search_function)(int[], int, int), int arr[], int size){
-
-    clock_t start = clock();
-    search_function(arr, size, getRandomIndex(size));
-    clock_t end = clock();
-
-    return (double)(end - start) / CLOCKS_PER_SEC;
 }
 
 int linearSearch(int arr[], int size, int target){
@@ -234,29 +107,77 @@ int binarySearch(int arr[], int size, int target){
     return -1;
 }
 
-int main(){
+Node* BST_Search(Node* root, int target){
 
-    int arr30[30];
-    int arr1000[1000];
-    int arr6000[6000];
-    int arr10000[10000];
+    Node* curr = root;
 
-    setArrayState(arr30, arr1000, arr6000, arr10000);
+    while(curr != NULL){
 
-
-    // Timing sorting time on each array
-    printf("Time to sort 30 elements (with quicksort):      %f seconds.\n", getTimeToSortArray(arr30, 30));
-    printf("Time to sort 1000 elements (with quicksort):    %f seconds.\n", getTimeToSortArray(arr1000, 1000));
-    printf("Time to sort 6000 elements (with quicksort):    %f seconds.\n", getTimeToSortArray(arr6000, 6000));
-    printf("Time to sort 10000 elements (with quicksort):   %f seconds.\n", getTimeToSortArray(arr10000, 10000));
-
-
-
-
-
-    return 0;
+        if(curr->key == target)
+            return curr;
+        else if(target < curr->key)
+            curr = curr->left;
+        else
+            curr = curr->right;
+    }
+    // Target not found
+    return NULL;
 }
-/*
+
+Node* BST_Insert_Recursive(Node* root, int new_key){
+
+    if(root == NULL)
+        return malloc(sizeof(Node));
+
+    if(new_key < root->key)
+        root->left = BST_Insert_Recursive(root->left, new_key);
+    else if(new_key > root->key)
+        root->right = BST_Insert_Recursive(root->right, new_key);
+
+    return root;
+}
+
+Node* BST_Insert_Iterative(Node* root, int new_key){
+
+    Node* newNode = malloc(sizeof(Node));
+
+    if(root == NULL)
+        return newNode;
+
+    Node* parent = NULL;
+    Node* curr = root;
+
+    while(curr != NULL){
+
+        parent = curr;
+
+        if(new_key < curr->key)
+            curr = curr->left;
+        else if(new_key > curr->key)
+            curr = curr->right;
+        else
+            return root;
+    }
+
+    if(new_key < parent->key)
+        parent->left = newNode;
+    else
+        parent->right = newNode;
+
+    return root;
+}
+
+void freeTree(Node* root){
+
+    if(root == NULL)
+        return;
+    
+    freeTree(root->left);
+    freeTree(root->right);
+
+    free(root);
+}
+
 int main() {
 
     // Seed the random number generator
@@ -272,23 +193,81 @@ int main() {
     const char* sfilenames[] = {"snodes30.txt", "snodes1000.txt", "snodes6000.txt", "snodes10000.txt"};
     int num_files = 4;
 
+    // Arrays for unsorted data
+    int arr30[sizes[0]];
+    int arr1000[sizes[1]];
+    int arr6000[sizes[2]];
+    int arr10000[sizes[3]];
+
+    // Arrays for sorted data
+    int s_arr30[sizes[0]];
+    int s_arr1000[sizes[1]];
+    int s_arr6000[sizes[2]];
+    int s_arr10000[sizes[3]];
+
+
+    int* arrays[] = {arr30, arr1000, arr6000, arr10000};
+    int* s_arrays[] = {s_arr30, s_arr1000, s_arr6000, s_arr10000};
+
+    int totalRandomElements = 10;
+    int randomElements[totalRandomElements];
+
     // PART 1: Generation of Data
     printf("--- Part 1: Generating Data ---\n");
     for (int i = 0; i < num_files; i++) {
-    // TODO: generate data for each size and filename
-    // Ensure the generated integers are UNIQUE and between 0 and 20000
-    // Save the data in nodes<x>.txt file
-    // Sort the data
-    // Example of how to measure time (Use this pattern for all measurements)
 
-    start_time = clock();
-    // TODO: Sort the array
-    end_time = clock();
+        FILE *filePtr;
+      
+        filePtr = fopen(filenames[i], "w");
 
-    time_taken = ((double)(end_time - start_time)) / CLOCKS_PER_SEC;
+        if(filePtr == NULL){
+            printf("Error opening file.\n");
+            return 1;
+        }
 
-    printf("Time to sort array of size %d: %f seconds\n", sizes[i], time_taken);
-    // Save the sorted data in snode<x>.txt file
+        // Populate Array, go to 20,001 to have a range of [0, 20,000]
+        for(int j = 0; j < sizes[i]; ++j){
+            fprintf(filePtr, "%d\n", rand() % 20001);
+        }
+        fclose(filePtr);
+
+        filePtr = fopen(filenames[i], "r");
+
+        if(filePtr == NULL){
+            printf("Error opening file.\n");
+            return 1;
+        }
+
+        for(int j = 0; j < sizes[i]; ++j){
+            if(fscanf(filePtr, "%d", &arrays[i][j]) != 1){
+                printf("Error reading data at index %d.\n", j);
+                break;
+            }
+        }
+        fclose(filePtr);
+
+        start_time = clock();
+        quickSort(arrays[i], 0, sizes[i] - 1);
+        end_time = clock();
+
+        time_taken = ((double)(end_time - start_time)) / CLOCKS_PER_SEC;
+
+
+
+        printf("Time to sort array of size %d: %f seconds\n", sizes[i], time_taken);
+
+        filePtr = fopen(sfilenames[i], "w");
+
+        if(filePtr == NULL){
+            printf("Error opening file.\n");
+            return 1;
+        }
+
+        // Populate array with sorted data
+        for(int j = 0; j < sizes[i]; ++j){
+            fprintf(filePtr, "%d\n", arrays[i][j]);
+        }
+        fclose(filePtr);
     }
     printf("Data generation complete.\n\n");
 
@@ -297,32 +276,125 @@ int main() {
     for (int i = 0; i < num_files; i++) {
     printf("=== Processing Dataset Size: %d ===\n", sizes[i]);
     // --- PART 2: Search on Sorted Array ---
-    // TODO: Read data from sfilenames[i] into an array
-    // TODO: Select 10 random elements from the array
-    // TODO: Measure time for Linear Search of the 10 elements
-    // TODO: Measure time for Binary Search of the 10 elements
+
+        FILE* filePtr;
+
+        filePtr = fopen(sfilenames[i], "r");
+
+        if(filePtr == NULL){
+            printf("Error opening file.\n");
+            return 1;
+        }
+
+        for(int j = 0; j < sizes[i]; ++j){
+            if(fscanf(filePtr, "%d", &s_arrays[i][j]) != 1){
+                printf("Error reading data at index %d.\n", j);
+                break;
+            }
+        }
+        fclose(filePtr);
+
+        for(int j = 0; j < totalRandomElements; ++j)
+            randomElements[j] = getRandomIndex(sizes[i]);
+
+        double linearSearchTimes[totalRandomElements];
+        double binarySearchTimes[totalRandomElements];
+
+        for(int j = 0; j < totalRandomElements; ++j){
+
+            start_time = clock();
+            linearSearch(s_arrays[i], sizes[i], randomElements[j]);
+            end_time = clock();
+
+            linearSearchTimes[j] = ((double)(end_time - start_time)) / CLOCKS_PER_SEC;
+
+            start_time = clock();
+            binarySearch(s_arrays[i], sizes[i], randomElements[j]);
+            end_time = clock();
+
+            binarySearchTimes[j] = ((double)(end_time - start_time)) / CLOCKS_PER_SEC;
+        }
 
 
-    // --- PART 3: Search and Insertion on Binary Search Tree ---
-    // 1. Random BST (Insert keys in the exact order they appear in the file)
-    Node* randomBST = NULL;
-    // TODO: Read from file again or use an unsorted copy of the array to insert elements
+        // --- PART 3: Search and Insertion on Binary Search Tree ---
+        // 1. Random BST (Insert keys in the exact order they appear in the file)
+        Node* randomBST = NULL;
 
-    // 2. Sorted BST (Insert keys from the sorted array)
-    Node* sortedBST = NULL;
-    // TODO: Measure time to Search for those 10 elements in BOTH trees
-    // TODO: Insert elements from the sorted array into sortedBST
-    // TODO: Generate 10 NEW random elements (between 0 and 20000)
-    // TODO: Measure time for Iterative Insertion of these 10 elements into BOTH trees
-    // TODO: Measure time for Recursive Insertion of these 10 elements into BOTH trees
+        for(int j = 0; j < sizes[i]; ++j){
+            BST_Insert_Iterative(randomBST, arrays[i][j]);
+        }
 
-    // Cleanup memory for this iteration
-    // TODO: Free arrays
-    // TODO: Free BSTs (randomBST and sortedBST) using freeTree()
-    printf("\n");
+        // 2. Sorted BST (Insert keys from the sorted array)
+        Node* sortedBST = NULL;
 
+        for(int j = 0; j < sizes[i]; ++j){
+            BST_Insert_Iterative(sortedBST, s_arrays[i][j]);
+        }
+
+        double randomBST_SearchTimes[totalRandomElements];
+        double sortedBST_SearchTime[totalRandomElements];
+
+        for(int j = 0; j < totalRandomElements; ++j){
+
+            start_time = clock();
+            BST_Search(randomBST, randomElements[j]);
+            end_time = clock();
+
+            randomBST_SearchTimes[j] = ((double)(end_time - start_time)) / CLOCKS_PER_SEC;
+
+            start_time = clock();
+            BST_Search(sortedBST, randomElements[j]);
+            end_time = clock();
+
+            sortedBST_SearchTime[j] = ((double)(end_time - start_time)) / CLOCKS_PER_SEC;
+        }
+
+        int newRandomElements[totalRandomElements];
+
+        for(int j = 0; j < totalRandomElements; ++j)
+            newRandomElements[j] = getRandomIndex(sizes[i]);
+
+        double randomBST_InsertTimes_Iterative[totalRandomElements];
+        double randomBST_InsertTimes_Recursive[totalRandomElements];
+
+        double sortedBST_InsertTimes_Iterative[totalRandomElements];
+        double sortedBST_InsertTimes_Recursive[totalRandomElements];
+
+        for(int j = 0; j < totalRandomElements; ++j){
+
+            start_time = clock();
+            BST_Insert_Iterative(randomBST, newRandomElements[j]);
+            end_time = clock();
+
+            randomBST_InsertTimes_Iterative[j] = ((double)(end_time - start_time)) / CLOCKS_PER_SEC;
+
+            start_time = clock();
+            BST_Insert_Recursive(randomBST, newRandomElements[j]);
+            end_time = clock();
+
+            randomBST_InsertTimes_Recursive[j] = ((double)(end_time - start_time)) / CLOCKS_PER_SEC;
+
+
+
+
+            start_time = clock();
+            BST_Insert_Iterative(sortedBST, newRandomElements[j]);
+            end_time = clock();
+
+            sortedBST_InsertTimes_Iterative[j] = ((double)(end_time - start_time)) / CLOCKS_PER_SEC;
+
+            start_time = clock();
+            BST_Insert_Recursive(sortedBST, newRandomElements[j]);
+            end_time = clock();
+
+            sortedBST_InsertTimes_Recursive[j] = ((double)(end_time - start_time)) / CLOCKS_PER_SEC;
+        }
+
+        // Cleanup memory for this iteration
+        freeTree(randomBST);
+        freeTree(sortedBST);
+        printf("\n");
     }
 
     return 0;
 }
-*/
